@@ -24,10 +24,12 @@ struct MovieListViewModel {
     private let errorMessageSubject = PublishSubject<String?>()
     private let isLoadingDataSubject = PublishSubject<Bool>()
     private var page = BehaviorRelay(value: 1)
+    var category = ""
     let movieService: MovieNetworkClientProtocol
     
-    init(service: MovieNetworkClient = MovieNetworkClient()) {
+    init(service: MovieNetworkClient = MovieNetworkClient(), category: String) {
         self.movieService = service
+        self.category = category
     }
 }
 
@@ -53,7 +55,7 @@ extension MovieListViewModel: MovieListViewModelType {
             .bind(to: page)
         
         let requestMovie = shared
-            .flatMapLatest { self.requestMovies(by: "") }
+            .flatMapLatest { self.requestMovies(by: self.category) }
             .bind(to: dataSourceRelay)
         
         let resetDatasource = shared
@@ -69,10 +71,9 @@ extension MovieListViewModel: MovieListViewModelType {
             .bind(to: dataSourceRelay)
     }
     
-    func bindMovieList(to observable: Observable<String>) -> Disposable {
+    func bindMovieList(to observable: Observable<Void>) -> Disposable {
         observable
-            .map { $0 }
-            .flatMapLatest { self.requestMovies(by: $0) }
+            .flatMapLatest { self.requestMovies(by: self.category) }
             .bind(to: dataSourceRelay)
     }
 }
@@ -85,8 +86,18 @@ private extension MovieListViewModel {
     }
     
     func requestMovies(by category: String) -> Single<[MovieInfoResponse]> {
-        movieService.fetchUpcomingMovies()
-            .take(1)
-            .asSingle()
+        
+        var movies: Observable<[MovieInfoResponse]> = Observable.just([])
+        if category == CategoryTitle.popular.rawValue {
+            movies = movieService.fetchPopularMovies()
+        }else if category == CategoryTitle.upcoming.rawValue {
+            movies = movieService.fetchUpcomingMovies()
+        }else if category == CategoryTitle.topRated.rawValue {
+            movies = movieService.fetchTopRatedMovies()
+        }else if category == CategoryTitle.nowPlaying.rawValue {
+            movies = movieService.fetchNowPlayingMovies()
+        }
+        
+        return movies.take(1).asSingle()
     }
 }

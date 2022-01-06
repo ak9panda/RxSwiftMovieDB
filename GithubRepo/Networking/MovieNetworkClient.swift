@@ -22,16 +22,16 @@ class MovieNetworkClient: APIClient, MovieNetworkClientProtocol {
     
     func fetchMovies() -> Observable<[MoviesSection]> {
         let popular = fetchPopularMovies().map {
-            MoviesSection(header: "POPULAR", movies: $0)
+            MoviesSection(header: CategoryTitle.popular.rawValue, movies: $0)
         }
         let toprated = fetchTopRatedMovies().map {
-            MoviesSection(header: "TOP RATED", movies: $0)
+            MoviesSection(header: CategoryTitle.topRated.rawValue, movies: $0)
         }
         let upcoming = fetchUpcomingMovies().map {
-            MoviesSection(header: "UPCOMING", movies: $0)
+            MoviesSection(header: CategoryTitle.upcoming.rawValue, movies: $0)
         }
         let nowplaying = fetchNowPlayingMovies().map {
-            MoviesSection(header: "NOW PLAYING", movies: $0)
+            MoviesSection(header: CategoryTitle.nowPlaying.rawValue, movies: $0)
         }
         return Observable.zip(popular, toprated, upcoming, nowplaying)
             .map { [$0, $1, $2, $3] }

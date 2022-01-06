@@ -14,14 +14,16 @@ class MovieListViewController: UIViewController {
     @IBOutlet weak var MovieListTableView: UITableView!
     
     private let disposeBag = DisposeBag()
-    private let viewModel = MovieListViewModel()
+    private var viewModel: MovieListViewModelType?
     private let viewDidLoadSubject = PublishSubject<Void>()
     
-    var category = PublishSubject<String>()
+    var category = ""
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        navigationItem.title = category
+        self.viewModel = MovieListViewModel(category: category)
         setupTableViewBind()
         setupObservables()
         
@@ -42,6 +44,9 @@ class MovieListViewController: UIViewController {
 extension MovieListViewController {
     
     func setupTableViewBind() {
+        guard let viewModel = self.viewModel else {
+            return
+        }
         disposeBag.insert(
             viewModel
                 .dataSource
@@ -59,12 +64,15 @@ extension MovieListViewController {
     }
     
     func setupObservables() {
+        guard let viewModel = self.viewModel else {
+            return
+        }
         disposeBag.insert(
             viewModel
                 .bindLoadFirstPage(to: viewDidLoadSubject),
             
-            viewModel
-                .bindMovieList(to: category),
+//            viewModel
+//                .bindMovieList(to: viewDidLoadSubject),
             
             viewModel
                 .dataSource

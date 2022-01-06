@@ -107,10 +107,11 @@ extension MoviesViewController {
     
     func pushMovieList(category: String) {
         let movieListVC = UIStoryboard.init(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "MovieListViewController") as! MovieListViewController
-        Observable.just(category)
-            .compactMap { $0 }
-            .bind(to: movieListVC.category)
-            .disposed(by: disposeBag)
+        movieListVC.category = category
+//        Observable.just(category)
+//            .compactMap { $0 }
+//            .bind(to: movieListVC.category)
+//            .disposed(by: disposeBag)
         self.navigationController?.pushViewController(movieListVC, animated: true)
     }
 }
