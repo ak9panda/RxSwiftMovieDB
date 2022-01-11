@@ -17,6 +17,8 @@ class MovieListViewController: UIViewController {
     private var viewModel: MovieListViewModelType?
     private let viewDidLoadSubject = PublishSubject<Void>()
     
+    var didSelectMovie: (MovieDetailViewModelProtocol) -> ()  = { _ in }
+    
     var category = ""
     
     override func viewDidLoad() {
@@ -44,6 +46,7 @@ class MovieListViewController: UIViewController {
 extension MovieListViewController {
     
     func setupTableViewBind() {
+        
         guard let viewModel = self.viewModel else {
             return
         }
@@ -58,6 +61,12 @@ extension MovieListViewController {
                     cell.setUp(viewModel: viewModel)
                 },
             
+            MovieListTableView
+                .rx
+                .modelSelected(MovieInfoResponse.self)
+                .asObservable()
+                .bind(to: viewModel.bindLoadMovieDetail),
+            
             Observable.just(150.0)
                 .bind(to: MovieListTableView.rx.rowHeight)
         )
@@ -71,8 +80,12 @@ extension MovieListViewController {
             viewModel
                 .bindLoadFirstPage(to: viewDidLoadSubject),
             
-//            viewModel
-//                .bindMovieList(to: viewDidLoadSubject),
+            viewModel
+                .movieDetail
+                .drive(onNext: { [weak self] movie in
+                    let detailViewModel = MovieDetailViewModel(model: movie)
+                    self?.didSelectMovie(detailViewModel)
+                }),
             
             viewModel
                 .dataSource

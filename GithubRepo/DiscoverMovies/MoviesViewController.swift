@@ -19,7 +19,9 @@ class MoviesViewController: UIViewController {
     private let disposeBag = DisposeBag()
     private let viewModel = MoviesViewModel()
     private let viewDidLoadSubject = PublishSubject<Void>()
-
+    
+    var didSelectMovie: (MovieDetailViewModelProtocol) -> () = { _ in }
+    var didSelectSeemore: (String) -> () = { _ in }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -76,7 +78,8 @@ extension MoviesViewController {
             viewModel
                 .movieDetail
                 .drive(onNext: { [weak self] model in
-                    self?.presentMovieDetail(with: model)
+                    let detailViewModel = MovieDetailViewModel(model: model)
+                    self?.didSelectMovie(detailViewModel)
                 }),
             
             btnRefresh.rx.tap
@@ -91,28 +94,7 @@ extension MoviesViewController {
 // MARK: - Get tap action from header cell
 extension MoviesViewController: SeemoreActionFromHeaderProtocol {
     func seemoreBtnTap(with category: String) {
-        self.pushMovieList(category: category)
-    }
-}
-
-// MARK: - Navigation
-extension MoviesViewController {
-    func presentMovieDetail(with model: MovieInfoResponse) {
-        let detailVC = UIStoryboard.init(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "MovieDetailViewController") as! MovieDetailViewController
-
-        let detailViewModel = MovieDetailViewModel(model: model)
-        detailVC.setup(viewModel: detailViewModel)
-        self.navigationController?.pushViewController(detailVC, animated: true)
-    }
-    
-    func pushMovieList(category: String) {
-        let movieListVC = UIStoryboard.init(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "MovieListViewController") as! MovieListViewController
-        movieListVC.category = category
-//        Observable.just(category)
-//            .compactMap { $0 }
-//            .bind(to: movieListVC.category)
-//            .disposed(by: disposeBag)
-        self.navigationController?.pushViewController(movieListVC, animated: true)
+        self.didSelectSeemore(category)
     }
 }
 

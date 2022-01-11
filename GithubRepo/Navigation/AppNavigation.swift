@@ -10,11 +10,11 @@ import UIKit
 
 struct AppNavigation {
     
-    let storyboard = UIStoryboard(name: "Main", bundle: nil)
+    let mainStoryboard = UIStoryboard(name: "Main", bundle: nil)
     
     init(window: UIWindow) {
         
-        let discover = DiscoverMoviesNavigation(storyboard: storyboard).discoverMoviesNavigationController
+        let discover = DiscoverMoviesNavigation(storyboard: mainStoryboard).discoverMoviesNavigationController
         
         let tabBarController = UITabBarController()
         tabBarController.hidesBottomBarWhenPushed = true

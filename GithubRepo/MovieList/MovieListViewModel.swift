@@ -11,11 +11,13 @@ import RxCocoa
 
 protocol MovieListViewModelType {
     var dataSource: Driver<[MovieInfoResponse]> { get }
+    var movieDetail: Driver<MovieInfoResponse> { get }
     var errorMessage: Driver<String?> { get }
     var isLoadingData: Driver<Bool> { get }
     
     func bindLoadFirstPage(to observable: Observable<Void>) -> Disposable
     func bindLoadNextPage(to observable: Observable<Void>) -> Disposable
+    func bindLoadMovieDetail(to observable: Observable<MovieInfoResponse>) -> Disposable
 }
 
 struct MovieListViewModel {
@@ -23,6 +25,7 @@ struct MovieListViewModel {
     private let dataSourceRelay = BehaviorRelay<[MovieInfoResponse]>(value: [])
     private let errorMessageSubject = PublishSubject<String?>()
     private let isLoadingDataSubject = PublishSubject<Bool>()
+    private let didRecieveMovieDetailSubject = PublishSubject<MovieInfoResponse>()
     private var page = BehaviorRelay(value: 1)
     var category = ""
     let movieService: MovieNetworkClientProtocol
@@ -45,6 +48,10 @@ extension MovieListViewModel: MovieListViewModelType {
     
     var isLoadingData: Driver<Bool> {
         isLoadingDataSubject.asDriver(onErrorJustReturn: false)
+    }
+      
+    var movieDetail: Driver<MovieInfoResponse> {
+        didRecieveMovieDetailSubject.asDriver(onErrorDriveWith: .empty())
     }
     
     func bindLoadFirstPage(to observable: Observable<Void>) -> Disposable {
@@ -75,6 +82,11 @@ extension MovieListViewModel: MovieListViewModelType {
         observable
             .flatMapLatest { self.requestMovies(by: self.category) }
             .bind(to: dataSourceRelay)
+    }
+    
+    func bindLoadMovieDetail(to observable: Observable<MovieInfoResponse>) -> Disposable {
+        observable
+            .bind(to: didRecieveMovieDetailSubject)
     }
 }
 
