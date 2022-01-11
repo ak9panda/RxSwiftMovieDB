@@ -9,7 +9,6 @@ import Foundation
 import RxSwift
 import RxCocoa
 
-
 class APIClient {
     
     func responseHandler<T>(data: Data?, urlResponse: URLResponse?, error: Error?) -> Result<T, Error>? where T: Decodable {
